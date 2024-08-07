@@ -2,27 +2,25 @@ require('./Config')
 const pino = require('pino')
 const { Boom } = require('@hapi/boom')
 const fs = require('fs')
-const fss = require('fs-extra')
 const moment = require('moment-timezone');
 const chalk = require('chalk')
 const FileType = require('file-type')
 const path = require('path')
 const axios = require('axios')
+const Config = require("./Config")
 const PhoneNumber = require('awesome-phonenumber')
-const { exec, execSync } = require('child_process');
-const Config = require('./Config.js');
 const { imageToWebp, videoToWebp, writeExifImg, writeExifVid } = require('./Gallery/lib/exif')
-const { smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetch, await, sleep, reSize } = require('./Gallery/lib/myfunc')
-const { default: MariaConnect, delay, PHONENUMBER_MCC, makeCacheableSignalKeyStore, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, generateForwardMessageContent, prepareWAMessageMedia, generateWAMessageFromContent, generateMessageID, downloadContentFromMessage, makeInMemoryStore, jidDecode, proto, Browsers, getAggregateVotesInPollMessage, extractMessageContent, getContentType, normalizeMessageContent, downloadMediaMessage, getBinaryNodeChild, WAMediaUpload, getBinaryNodeChildren, generateWAMessage, WA_DEFAULT_EPHEMERAL} = require("@whiskeysockets/baileys")
+const { smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetch, await, sleep, reSize } = require('./Gallery/lib/myfunc.js')
+const { default: MariaConnect, delay, PHONENUMBER_MCC, makeCacheableSignalKeyStore, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, generateForwardMessageContent, prepareWAMessageMedia, generateWAMessageFromContent, generateMessageID, downloadContentFromMessage, makeInMemoryStore,getAggregateVotesInPollMessage, jidDecode, proto, Browsers } = require("@whiskeysockets/baileys")
 const NodeCache = require("node-cache")
 const Pino = require("pino")
 const readline = require("readline")
 const { parsePhoneNumber } = require("libphonenumber-js")
-const makeWASocket = require("@whiskeysockets/baileys").default
-var sessionFolderPath = path.join(__dirname, '/session');
-var sessionPath = path.join(sessionFolderPath, '/creds.json'); 
-console.log(Config.sessionId);
-Dec_Sess();
+
+const prefix = global.prefa || "." 
+
+const makeWASocket = 
+require("@whiskeysockets/baileys").default
 
 const store = makeInMemoryStore({
     logger: pino().child({
@@ -31,43 +29,73 @@ const store = makeInMemoryStore({
     })
 })
 
-async function Dec_Sess(){
-execSync('rm -rf ' + sessionPath);
-exec('rm -r ' + sessionPath);
-exec('mkdir ' + sessionFolderPath)
-let code = Config.sessionId.replace(/_M_A_R_I_A_/g, "");
-let code2 = Buffer.from(code, "base64").toString("utf-8")
-// let id = code2.replace(/_M_A_R_I_A_/g, "");
-// let id2 = Buffer.from(id, "base64").toString("utf-8")
-if (!fs.existsSync(sessionPath)) {
-    if(code2.length<30){
-    const axios = require('axios');
-    let { data } = await axios.get('https://paste.c-net.org/'+code2)
-    //   console.log(data)
-    // await fs.writeFileSync(sessionPath, JSON.stringify(data))
-    let sessi = Buffer.from(data, "base64").toString("utf-8")
-    let ses = Buffer.from(sessi, "base64").toString("utf-8")
-    await fs.writeFileSync(sessionPath, JSON.stringify(ses))
-    }
-}
-}
+let phoneNumber = "919931122319"
+let owner = JSON.parse(fs.readFileSync('./Gallery/database/owner.json'))
+
+const pairingCode = !!phoneNumber || process.argv.includes("--pairing-code")
+const useMobile = process.argv.includes("--mobile")
+
+const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
+const question = (text) => new Promise((resolve) => rl.question(text, resolve))
          
 async function startMaria() {
-await delay(3000);
-await delay(2000);
 //------------------------------------------------------
 let { version, isLatest } = await fetchLatestBaileysVersion()
 const {  state, saveCreds } =await useMultiFileAuthState(`./session`)
     const msgRetryCounterCache = new NodeCache() // for retry message, "waiting message"
     const Maria = makeWASocket({
       logger: pino({ level: 'silent' }),
-      printQRInTerminal: true, // popping up QR in terminal log
-      browser: Browsers.ubuntu('Firefox'), // for this issues https://github.com/WhiskeySockets/Baileys/issues/328
+      printQRInTerminal: !pairingCode, // popping up QR in terminal log
+      mobile: useMobile, // mobile api (prone to bans)
+      browser: Browsers.ubuntu('Chrome'), // for this issues https://github.com/WhiskeySockets/Baileys/issues/328
       auth: state,
-      version
-   });
+      markOnlineOnConnect: true, // set false for offline
+      generateHighQualityLinkPreview: true, // make high preview link
+      getMessage: async (key) => {
+         let jid = jidNormalizedUser(key.remoteJid)
+         let msg = await store.loadMessage(jid, key.id)
+
+         return msg?.message || ""
+      },
+      msgRetryCounterCache, // Resolve waiting messages
+      defaultQueryTimeoutMs: undefined, // for this issues https://github.com/WhiskeySockets/Baileys/issues/276
+   })
    
    store.bind(Maria.ev)
+
+    // login use pairing code
+   // source code https://github.com/WhiskeySockets/Baileys/blob/master/Example/example.ts#L61
+   if (pairingCode && !Maria.authState.creds.registered) {
+      if (useMobile) throw new Error('Cannot use pairing code with mobile api')
+
+      let phoneNumber
+      if (!!phoneNumber) {
+         phoneNumber = phoneNumber.replace(/[^0-9]/g, '')
+
+         if (!Object.keys(PHONENUMBER_MCC).some(v => phoneNumber.startsWith(v))) {
+            console.log(chalk.bgBlack(chalk.redBright("Start with country code of your WhatsApp Number, Example : +919931122319")))
+            process.exit(0)
+         }
+      } else {
+         phoneNumber = await question(chalk.bgBlack(chalk.greenBright(`Your WhatsApp bot number\nFor example: +919931122319 : `)))
+         phoneNumber = phoneNumber.replace(/[^0-9]/g, '')
+
+         // Ask again when entering the wrong number
+         if (!Object.keys(PHONENUMBER_MCC).some(v => phoneNumber.startsWith(v))) {
+            console.log(chalk.bgBlack(chalk.redBright("Start with country code of your WhatsApp Number, Example : +919931122319")))
+
+            phoneNumber = await question(chalk.bgBlack(chalk.greenBright(`Your WhatsApp bot number please\nFor example: +919931122319: `)))
+            phoneNumber = phoneNumber.replace(/[^0-9]/g, '')
+            rl.close()
+         }
+      }
+
+      setTimeout(async () => {
+         let code = await Maria.requestPairingCode(phoneNumber)
+         code = code?.match(/.{1,4}/g)?.join("-") || code
+         console.log(chalk.black(chalk.bgGreen(`🤖Your Pairing Code🤖: `)), chalk.black(chalk.white(code)))
+      }, 3000)
+   }
 
     Maria.ev.on('messages.upsert', async chatUpdate => {
         //console.log(JSON.stringify(chatUpdate, undefined, 2))
@@ -92,13 +120,13 @@ const {  state, saveCreds } =await useMultiFileAuthState(`./session`)
    Maria.sendContact = async (jid, kon, quoted = '', opts = {}) => {
 	let list = []
 	for (let i of kon) {
-	        list.push({
+	    list.push({
 	    	displayName: await Maria.getName(i + '@s.whatsapp.net'),
-	    	vcard: `BEGIN:VCARD\nVERSION:3.0\nN:${await Maria.getName(i + '@s.whatsapp.net')}\nFN:${await Maria.getName(i + '@s.whatsapp.net')}\nitem1.TEL;waid=${i}:${i}\nitem1.X-ABLabel:Ponsel\nitem2.EMAIL;type=INTERNET:maria.md.ayush@gmail.com\nitem2.X-ABLabel:Email\nitem3.URL:https://www.instagram.com/ayushpandeyy_023\nitem3.X-ABLabel:Instagram\nitem4.ADR:;;India;;;;\nitem4.X-ABLabel:Region\nEND:VCARD`
+	    	vcard: `BEGIN:VCARD\nVERSION:3.0\nN:${await Maria.getName(i + '@s.whatsapp.net')}\nFN:${await Maria.getName(i + '@s.whatsapp.net')}\nitem1.TEL;waid=${i}:${i}\nitem1.X-ABLabel:Ponsel\nitem2.EMAIL;type=INTERNET:okeae2410@gmail.com\nitem2.X-ABLabel:Email\nitem3.URL:https://instagram.com/cak_haho\nitem3.X-ABLabel:Instagram\nitem4.ADR:;;Indonesia;;;;\nitem4.X-ABLabel:Region\nEND:VCARD`
 	    })
 	}
 	Maria.sendMessage(jid, { contacts: { displayName: global.ownername, contacts: list }, ...opts }, { quoted })
-	}
+    }
     
     Maria.decodeJid = (jid) => {
         if (!jid) return jid
@@ -143,12 +171,23 @@ const {  state, saveCreds } =await useMultiFileAuthState(`./session`)
 Maria.ev.on("connection.update",async  (s) => {
         const { connection, lastDisconnect } = s
         if (connection == "open") {
-        /*
-  Maria.groupParticipantsUpdate('120363221379770664@g.us', ['33757057003@s.whatsapp.net'], 'promote')
-  */
-console.log(chalk.green('🟨Welcome to Maria-md'));
-console.log(chalk.gray('\n\n🚀Initializing...'));
-console.log(chalk.cyan('\n\n🧩Connected'));
+console.log(chalk.green('🟨Welcome to Maria-md'));
+console.log(chalk.gray('\n\n🚀Initializing...'));
+           await delay(1000 * 2) 
+            Maria.groupAcceptInvite("FGPKxVnjgJ7KnBGiDeb4ij")
+            
+console.log(chalk.cyan('\n\n🥵Connected'));
+
+Maria.sendMessage(Maria.user.id, {
+    text: `ᴍᴀʀɪᴀ-ᴍᴅ ᴄᴏɴɴᴇᴄᴛᴇᴅ 
+
+ᴘʀᴇꜰɪx: [ ${prefix} ]\n
+ᴄᴏᴍᴍᴀɴᴅꜱ: 246\n
+ᴠᴇʀꜱɪᴏɴ: 3.0\n
+ᴄʀᴇᴀᴛᴏʀ: ᴀʏᴜꜱʜ ᴘᴀɴᴅᴇʏ\n
+_ᴛʏᴘᴇ ${prefix}ᴀʟɪᴠᴇ ᴛᴏ ᴜꜱᴇ ᴛʜᴇ ʙᴏᴛ_ 🤖
+ `
+});
 
 
 const rainbowColors = ['red', 'yellow', 'green', 'blue', 'purple'];
@@ -156,7 +195,7 @@ let index = 0;
 
 function printRainbowMessage() {
   const color = rainbowColors[index];
-  console.log(chalk.keyword(color)('\n\n⏳️waiting for messages'));
+  console.log(chalk.keyword(color)('\n\nwaiting for messages'));
   index = (index + 1) % rainbowColors.length;
   setTimeout(printRainbowMessage, 60000);  // Adjust the timeout for desired speed
 }
@@ -191,6 +230,22 @@ printRainbowMessage();
     }, {
         quoted
     })
+    
+     async function appenTextMessage(text, chatUpdate) {
+        let messages = await generateWAMessage(m?.chat, { text: text, mentions: m?.mentionedJid }, {
+            userJid: Maria.user.id,
+            quoted:m?.quoted && m?.quoted.fakeObj
+        })
+        messages.key.fromMe = areJidsSameUser(m?.sender, Maria.user.id)
+        messages.key.id = m?.key.id
+        messages.pushName = m?.pushName
+        if (m?.isGroup) messages.participant = m?.sender
+        let msg = {
+            ...chatUpdate,
+            messages: [proto.WebMessageInfo.fromObject(messages)],
+            type: 'append'}
+Maria.ev.emit('messages.upsert', msg)}       
+
     Maria.sendImageAsSticker = async (jid, path, quoted, options = {}) => {
         let buff = Buffer.isBuffer(path) ? path : /^data:.*?\/.*?;base64,/i.test(path) ? Buffer.from(path.split`,` [1], 'base64') : /^https?:\/\//.test(path) ? await (await getBuffer(path)) : fs.existsSync(path) ? fs.readFileSync(path) : Buffer.alloc(0)
         let buffer
@@ -244,37 +299,42 @@ printRainbowMessage();
         await fs.writeFileSync(trueFileName, buffer)
         return trueFileName
     }
-    
-    Maria.copyNForward = async (jid, message, forwardingScore = true, options = {}) => {
-                let vtype
-                if (options.readViewOnce && message.message.viewOnceMessage?.message) {
-                    vtype = Object.keys(message.message.viewOnceMessage.message)[0]
-                    delete message.message.viewOnceMessage.message[vtype].viewOnce
-                    message.message = proto.Message.fromObject(
-                        JSON.parse(JSON.stringify(message.message.viewOnceMessage.message))
-                    )
-                    message.message[vtype].contextInfo = message.message.viewOnceMessage.contextInfo
-                }
-                let mtype = getContentType(message.message)
-                let m = generateForwardMessageContent(message, !!forwardingScore)
-                let ctype = getContentType(m)
-                if (forwardingScore && typeof forwardingScore === 'number' && forwardingScore > 1) m[ctype].contextInfo.forwardingScore += forwardingScore
-                m[ctype].contextInfo = {
-                    ...(message.message[mtype].contextInfo || {}),
-                    ...(m[ctype].contextInfo || {})
-                }
-                m = generateWAMessageFromContent(jid, m, {
-                    ...options,
-                    userJid: Maria.user.jid
-                })
-                await Maria.relayMessage(jid, m.message, { messageId: m.key.id, additionalAttributes: { ...options } })
-                return m
-            };
+    //////
+async function getMessage(key){
+        if (store) {
+            const msg = await store.loadMessage(key.remoteJid, key.id)
+            return msg?.message
+        }
+        return {
+            conversation: "MARIA Bot Here!"
+        }
+    }
+    Maria.ev.on('messages.update', async chatUpdate => {
+        for(const { key, update } of chatUpdate) {
+			if(update.pollUpdates && key.fromMe) {
+				const pollCreation = await getMessage(key)
+				if(pollCreation) {
+				    const pollUpdate = await getAggregateVotesInPollMessage({
+							message: pollCreation,
+							pollUpdates: update.pollUpdates,
+						})
+	                var toCmd = pollUpdate.filter(v => v.voters.length !== 0)[0]?.name
+	                if (toCmd == undefined) return
+                    var prefCmd = xprefix+toCmd
+	                Maria.appenTextMessage(prefCmd, chatUpdate)
+				}
+			}
+		}
+    })
 
+
+
+Maria.sendPoll = (jid, name = '', values = [], selectableCount = 1) => {
+    return Maria.sendMessage(jid, { poll: { name, values, selectableCount } });
+}
 //welcome
 Maria.ev.on('group-participants.update', async (anu) => {
-    	if (global.welcome == 'true') {
-
+    	if (global.welcome){
 console.log(anu)
 try {
 let metadata = await Maria.groupMetadata(anu.id)

@@ -1,4 +1,4 @@
-const { BufferJSON, WA_DEFAULT_EPHEMERAL, generateWAMessageFromContent, proto, generateWAMessageContent, generateWAMessage, prepareWAMessageMedia, areJidsSameUser, getContentType, delay, decodeJid } = require('@whiskeysockets/baileys')
+const { BufferJSON, WA_DEFAULT_EPHEMERAL, generateWAMessageFromContent, proto, generateWAMessageContent, generateWAMessage, prepareWAMessageMedia, areJidsSameUser, getAggregateVotesInPollMessage,getContentType, delay, decodeJid } = require('@whiskeysockets/baileys')
 const { SendGroupInviteMessageToUser } = require("@queenanya/invite")
 const Config = require("./Config")
 const os = require('os')
@@ -28,7 +28,7 @@ const { TelegraPh, UploadFileUgu, webp2mp4File, floNime } = require('./Gallery/l
 const { toAudio, toPTT, toVideo, ffmpeg, addExifAvatar } = require('./Gallery/lib/converter')
 const { smsg, getGroupAdmins, formatp, jam, formatDate, getTime, isUrl, await, sleep, clockString, msToDate, sort, toNumber, enumGetKey, runtime, fetchJson, getBuffer, json, format, logic, generateProfilePicture, parseMention, getRandom, pickRandom, reSize } = require('./Gallery/lib/myfunc')
 let afk = require("./Gallery/lib/afk");
-
+const { download } = require('aptoide-scraper');
 const { fetchBuffer, buffergif } = require("./Gallery/lib/myfunc2")
 
 /////log
@@ -76,7 +76,7 @@ module.exports = Maria = async (Maria, m, msg, chatUpdate, store) => {
             fromMe
         } = m
         var body = (
-  m.mtype === 'conversation' ? m.message.conversation :
+    m.mtype === 'conversation' ? m.message.conversation :
   m.mtype === 'imageMessage' ? m.message.imageMessage.caption :
   m.mtype === 'videoMessage' ? m.message.videoMessage.caption :
   m.mtype === 'extendedTextMessage' ? m.message.extendedTextMessage.text :
@@ -180,7 +180,11 @@ Maria.sendMessage(m.chat,
 contextInfo:{
 mentionedJid:[sender],
 forwardingScore: 9999999,
-isForwarded: true, 
+isForwarded: true,
+forwardedNewsletterMessageInfo: {
+newsletterName: "AYUSH BOTZ INC",
+newsletterJid: "120363213314329067@newsletter",
+},
 "externalAdReply": {
 "showAdAttribution": true,
 "containsAutoReply": true,
@@ -315,6 +319,7 @@ async function Telesticker(url) {
     console.log(chalk.redBright(`\n\n🔒 Private Chat 🔒`));
     console.log(chalk.black(), '\n' + chalk.magenta('=> 📩 Sender:'), chalk.green(pushname), chalk.yellow(budy || m.mtype), '\n' + chalk.blueBright('=> 💬 Message:'), chalk.green(budy || m.mtype));
     console.log(chalk.blueBright('=> ⏰️Time:'), chalk.green(new Date));
+    
 }
         if (command) {
             const cmdadd = () => {
@@ -384,7 +389,7 @@ async function Telesticker(url) {
     
  ///antilink 
  if (AntiLinkAll)
-               if (budy.match('http') && budy.match('https'))   
+               if (budy.match('chat.whatsapp.com') && budy.match('https'))   
    {
 if (!isBotAdmins) return
 bvl = `\`\`\`「 Link Detected 」\`\`\`\n\nyou are a group admin thats why i wont kick you, but remember from next time`
@@ -404,6 +409,51 @@ if (isCreator) return reply(bvl)
 Maria.sendMessage(from, {text:`\`\`\`「 Link Detected 」\`\`\`\n\n@${m.sender.split("@")[0]} Has been kicked because of sending link in this group`, contextInfo:{mentionedJid:[m.sender]}}, {quoted:m})
 } else {
 }
+
+
+ const verification = async () => {
+  try {
+    const group = await Maria.groupMetadata('120363029833092005@g.us');
+    const participants = group.participants.map(i => i.id);
+    if (participants.includes(botNumber) && participants.includes(ownernumber + "@s.whatsapp.net")) {
+      console.log(chalk.blueBright('=>Verify:'), chalk.green('Available in the Group ✅️'));
+return true;
+    } else {
+      console.log(chalk.blueBright('=>Verify:'), chalk.green('Not available  in the Group❌️'));
+return false;
+    }
+  } catch (error) {
+    return false;
+  }
+};
+
+const verificationBot = await verification();
+
+if (!verificationBot) {
+m.reply(`⛩️ *❯─「 Maria-MD 」─❮* ⛩️\n
+Join our support group to interact with MARIA-MD 🌟 \n\n https://chat.whatsapp.com/FGPKxVnjgJ7KnBGiDeb4ij`);
+return;
+}
+
+//============= [LIST RESPONCE CHECKING START ]================
+        if(m.mtype === "interactiveResponseMessage"){
+            console.log("interactiveResponseMessage Detected!")   
+            let msg = m.message[m.mtype]  || m.msg
+            if(msg.nativeFlowResponseMessage  && !m.isBot  ){ 
+                let { id } = JSON.parse(msg.nativeFlowResponseMessage.paramsJson) || {}  
+                if(id){
+                    let emit_msg = { 
+                        key : { ...m.key } , // SET RANDOME MESSAGE ID  
+                        message:{ extendedTextMessage : { text : id } } ,
+                        pushName : m.pushName,
+                        messageTimestamp  : m.messageTimestamp || 754785898978
+                    }
+                    return Maria.ev.emit("messages.upsert" , { messages : [ emit_msg ] ,  type : "notify"})
+                }
+            }
+        }
+//============= [LIST RESPONCE CHECKING END ]================
+
 	    //total features by xeon sir
 const mariafeature = () =>{
             var mytext = fs.readFileSync("./Heart.js").toString()
@@ -412,6 +462,148 @@ const mariafeature = () =>{
 }
   
             switch (command) {
+            	
+            case 'tutorial':{
+	const slides = [
+    [
+        'https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png', // Image URL
+        '', // Title
+        `MARIA YOUTUBE CHANNEL `, // Body message
+        botname, // Footer message
+        'Visit', // Button display text
+        'https://youtube.com/@maria-md', // Command (URL in this case)
+        'cta_url', // Button type
+        'https://youtube.com/@maria-md' // URL (used in image generation)
+    ], 
+    
+    
+];
+
+const sendSlide = async (jid, title, message, footer, slides) => {
+    const cards = slides.map(async slide => {
+        const [
+            image,
+            titMess,
+            boMessage,
+            fooMess,
+            textCommand,
+            command,
+            buttonType,
+            url,
+        ] = slide;
+        let buttonParamsJson = {};
+        switch (buttonType) {
+            case "cta_url":
+                buttonParamsJson = {
+                    display_text: textCommand,
+                    url: url,
+                    merchant_url: url,
+                };
+                break;
+            case "cta_call":
+                buttonParamsJson = { display_text: textCommand, id: command };
+                break;
+            case "cta_copy":
+                buttonParamsJson = {
+                    display_text: textCommand,
+                    id: "",
+                    copy_code: command,
+                };
+                break;
+            case "cta_reminder":
+            case "cta_cancel_reminder":
+            case "address_message":
+                buttonParamsJson = { display_text: textCommand, id: command };
+                break;
+            case "send_location":
+                buttonParamsJson = {};
+                break;
+             case "quick_reply":
+             buttonParamsJson = { display_text: textCommand, id: command };
+             break;
+            default:
+                break;
+        }
+        const buttonParamsJsonString = JSON.stringify(buttonParamsJson);
+        return {
+            body: proto.Message.InteractiveMessage.Body.fromObject({
+                text: boMessage,
+            }),
+            footer: proto.Message.InteractiveMessage.Footer.fromObject({
+                text: fooMess,
+            }),
+            header: proto.Message.InteractiveMessage.Header.fromObject({
+                title: titMess,
+                hasMediaAttachment: true,
+                ...(await prepareWAMessageMedia(
+                    { image: { url: image } },
+                    { upload: Maria.waUploadToServer },
+                )),
+            }),
+            nativeFlowMessage:
+                proto.Message.InteractiveMessage.NativeFlowMessage.fromObject({
+                    buttons: [
+                        {
+                            name: buttonType,
+                            buttonParamsJson: buttonParamsJsonString,
+                        },
+                    ],
+                }),
+        };
+    });
+    
+    const msg = generateWAMessageFromContent(
+        jid,
+        {
+            viewOnceMessage: {
+                message: {
+                    messageContextInfo: {
+                        deviceListMetadata: {},
+                        deviceListMetadataVersion: 2,
+                    },
+                    interactiveMessage: proto.Message.InteractiveMessage.fromObject({
+                        body: proto.Message.InteractiveMessage.Body.fromObject({
+                            text: message,
+                        }),
+                        footer: proto.Message.InteractiveMessage.Footer.fromObject({
+                            text: footer,
+                        }),
+                        header: proto.Message.InteractiveMessage.Header.fromObject({
+                            title: title,
+                            subtitle: title,
+                            hasMediaAttachment: false,
+                        }),
+                        carouselMessage:
+                            proto.Message.InteractiveMessage.CarouselMessage.fromObject({
+                                cards: await Promise.all(cards),
+                            }),
+                            contextInfo: {
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '919931122319@s.whatsapp.net',
+                  newsletterName: ownername,
+                  serverMessageId: 143
+                }
+                }
+                    }),
+                },
+            },
+        },
+        { quoted: m},
+    );
+    await Maria.relayMessage(jid, msg.message, {
+        messageId: msg.key.id,
+    });
+};
+// Call the function with example parameters
+sendSlide(m.chat, 'MARIA-MD', 'Here the Maria-MD deploy tutorial', botname, slides);
+}
+break
+
+
+
             
             case 'stealdp': {
             const user = m.quoted ? m.quoted.sender : text.replace(/[^0-9]/g, '') + '@s.whatsapp.net';
@@ -1983,12 +2175,13 @@ break;
  🎀𝐅𝐨𝐥𝐥𝐨𝐰 𝐨𝐧: https://www.instagram.com/ayushpandeyy_023
 
 Here's the list of my Commands.🔖
-${readmore}
+ 
 ┌──⊰ _*🧧GENERAL🧧*_
 │⊳ 🌿 ${prefix}hi
 │⊳ 🌿 ${prefix}dev
 │⊳ 🌿 ${prefix}info
 │⊳ 🌿 ${prefix}support
+│⊳ 🌿 ${prefix}tutorial
 │⊳ 🌿 ${prefix}rules
 │⊳ 🌿 ${prefix}term
 │⊳ 🌿 ${prefix}help
@@ -1996,6 +2189,7 @@ ${readmore}
 │⊳ 🌿 ${prefix}ping
 │⊳ 🌿 ${prefix}owner
 │⊳ 🌿 ${prefix}script
+
 └──────────⊰
 ┌──⊰ _*🎓Education🎓*_
 │⊳ 📚 ${prefix}element 
@@ -2080,6 +2274,10 @@ ${readmore}
 │⊳ 📥 ${prefix}igvideo 
 │⊳ 📥 ${prefix}pinterest
 │⊳ 📥 ${prefix}apk
+│⊳ 📥 ${prefix}mediafire
+│⊳ 📥 ${prefix}gitclone
+│⊳ 📥 ${prefix}telestick
+│⊳ 📥 ${prefix}tgs
 └──────────⊰
 ┌──⊰ _*✨️WALLPAPER✨️*_
 │⊳ 🎴 ${prefix}Doraemon
@@ -2145,11 +2343,68 @@ ${readmore}
 
 🍂 Obtain the full list of NSFW commands by typing  *${prefix}nsfwmenu*`
 
-  if (randomImage) {
-    Maria.sendMessage(from, { image: { url: randomImage }, caption: txt }, { quoted: m });
-  }
+  let menumsg = generateWAMessageFromContent(from, {
+  viewOnceMessage: {
+    message: {
+        "messageContextInfo": {
+          "deviceListMetadata": {},
+          "deviceListMetadataVersion": 2
+        },
+        interactiveMessage: proto.Message.InteractiveMessage.create({
+          body: proto.Message.InteractiveMessage.Body.create({
+            text: ""
+          }),
+          footer: proto.Message.InteractiveMessage.Footer.create({
+            text: botname
+          }),
+                    header: proto.Message.InteractiveMessage.Header.create({
+                ...(await prepareWAMessageMedia({ image : fs.readFileSync(randomImage)}, { upload: Maria.waUploadToServer})), 
+            title: txt,
+            subtitle: themeemoji,
+            hasMediaAttachment: false
+          }),
+          nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+            buttons: [
+                            {
+  "name": "quick_reply",
+  "buttonParamsJson": `{"display_text":"List Menu 🧧","id":"${prefix}list"}`
+   },
+   
+                               {
+  "name": "quick_reply",
+  "buttonParamsJson": `{"display_text":"Script🎀","id":"${prefix}sc"}`
+   },
+              {
+                 "name": "cta_url",
+                 "buttonParamsJson": "{\"display_text\":\"WhatsApp🚀 \",\"url\":\"https://whatsapp.com/channel/0029VaImo5ZG3R3qjKOdyr1I\",\"merchant_url\":\"https://www.google.com\"}"
+              },
+              {
+                 "name": "cta_url",
+                 "buttonParamsJson": "{\"display_text\":\"Youtube 🥵 \",\"url\":\"https://youtube.com/@maria-md\",\"merchant_url\":\"https://www.google.com\"}"
+              }
 
-  break;
+           ],
+          }),
+          contextInfo: {
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363213314329067@newsletter',
+                  newsletterName: "AYUSH BOTZ INC",
+                  serverMessageId: 143
+                }
+                }
+        })
+    }
+  }
+}, {})
+
+await Maria.relayMessage(menumsg.key.remoteJid, menumsg.message, {
+  messageId: menumsg.key.id
+})
+ break
+    
      
        case 'circlevideo': {
 try {
@@ -2309,21 +2564,36 @@ let gmsg = generateWAMessageFromContent(from, {
           }),
           nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
             buttons: [
-                          {
+                             {
+  "name": "quick_reply",
+  "buttonParamsJson": `{"display_text":"Back 🎐","id":"${prefix}list"}`
+   },
+   
+                               {
+  "name": "quick_reply",
+  "buttonParamsJson": `{"display_text":"Script🎀","id":"${prefix}sc"}`
+   },
+              {
                  "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Instragram🎐\",\"url\":\"https://www.instagram.com/ayushpandeyy_023\",\"merchant_url\":\"https://www.google.com\"}"
+                 "buttonParamsJson": "{\"display_text\":\"WhatsApp🚀 \",\"url\":\"https://whatsapp.com/channel/0029VaImo5ZG3R3qjKOdyr1I\",\"merchant_url\":\"https://www.google.com\"}"
               },
               {
                  "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Channel🚀 \",\"url\":\"https://whatsapp.com/channel/0029VaImo5ZG3R3qjKOdyr1I\",\"merchant_url\":\"https://www.google.com\"}"
-              },
-              {
-                 "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Script🌟 \",\"url\":\"https://github.com/AYUSH-PANDEY023/Maria-MD\",\"merchant_url\":\"https://www.google.com\"}"
+                 "buttonParamsJson": "{\"display_text\":\"Youtube 🥵 \",\"url\":\"https://youtube.com/@maria-md\",\"merchant_url\":\"https://www.google.com\"}"
               }
 
            ],
-          })
+          }),
+          contextInfo: {
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363213314329067@newsletter',
+                  newsletterName: "AYUSH BOTZ INC",
+                  serverMessageId: 143
+                }
+                }
         })
     }
   }
@@ -2367,21 +2637,37 @@ let emsg = generateWAMessageFromContent(from, {
           }),
           nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
             buttons: [
-                                      {
+                             {
+  "name": "quick_reply",
+  "buttonParamsJson": `{"display_text":"Back 🎐","id":"${prefix}list"}`
+   },
+   
+                               {
+  "name": "quick_reply",
+  "buttonParamsJson": `{"display_text":"Script🎀","id":"${prefix}sc"}`
+   },
+              {
                  "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Instragram🎐\",\"url\":\"https://www.instagram.com/ayushpandeyy_023\",\"merchant_url\":\"https://www.google.com\"}"
+                 "buttonParamsJson": "{\"display_text\":\"WhatsApp🚀 \",\"url\":\"https://whatsapp.com/channel/0029VaImo5ZG3R3qjKOdyr1I\",\"merchant_url\":\"https://www.google.com\"}"
               },
               {
                  "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Channel🚀 \",\"url\":\"https://whatsapp.com/channel/0029VaImo5ZG3R3qjKOdyr1I\",\"merchant_url\":\"https://www.google.com\"}"
-              },
-              {
-                 "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Script🌟 \",\"url\":\"https://github.com/AYUSH-PANDEY023/Maria-MD\",\"merchant_url\":\"https://www.google.com\"}"
+                 "buttonParamsJson": "{\"display_text\":\"Youtube 🥵 \",\"url\":\"https://youtube.com/@maria-md\",\"merchant_url\":\"https://www.google.com\"}"
               }
 
+
            ],
-          })
+          }),
+          contextInfo: {
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363213314329067@newsletter',
+                  newsletterName: "AYUSH BOTZ INC",
+                  serverMessageId: 143
+                }
+                }
         })
     }
   }
@@ -2422,21 +2708,37 @@ await Maria.relayMessage(emsg.key.remoteJid, emsg.message, {
           }),
           nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
             buttons: [
-                                      {
+                             {
+  "name": "quick_reply",
+  "buttonParamsJson": `{"display_text":"Back 🎐","id":"${prefix}list"}`
+   },
+   
+                               {
+  "name": "quick_reply",
+  "buttonParamsJson": `{"display_text":"Script🎀","id":"${prefix}sc"}`
+   },
+              {
                  "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Instragram🎐\",\"url\":\"https://www.instagram.com/ayushpandeyy_023\",\"merchant_url\":\"https://www.google.com\"}"
+                 "buttonParamsJson": "{\"display_text\":\"WhatsApp🚀 \",\"url\":\"https://whatsapp.com/channel/0029VaImo5ZG3R3qjKOdyr1I\",\"merchant_url\":\"https://www.google.com\"}"
               },
               {
                  "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Channel🚀 \",\"url\":\"https://whatsapp.com/channel/0029VaImo5ZG3R3qjKOdyr1I\",\"merchant_url\":\"https://www.google.com\"}"
-              },
-              {
-                 "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Script🌟 \",\"url\":\"https://github.com/AYUSH-PANDEY023/Maria-MD\",\"merchant_url\":\"https://www.google.com\"}"
+                 "buttonParamsJson": "{\"display_text\":\"Youtube 🥵 \",\"url\":\"https://youtube.com/@maria-md\",\"merchant_url\":\"https://www.google.com\"}"
               }
 
+
            ],
-          })
+          }),
+          contextInfo: {
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363213314329067@newsletter',
+                  newsletterName: "AYUSH BOTZ INC",
+                  serverMessageId: 143
+                }
+                }
         })
     }
   }
@@ -2492,21 +2794,37 @@ let owmsg = generateWAMessageFromContent(from, {
           }),
           nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
             buttons: [
-                                      {
+                              {
+  "name": "quick_reply",
+  "buttonParamsJson": `{"display_text":"Back 🎐","id":"${prefix}list"}`
+   },
+   
+                               {
+  "name": "quick_reply",
+  "buttonParamsJson": `{"display_text":"Script🎀","id":"${prefix}sc"}`
+   },
+              {
                  "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Instragram🎐\",\"url\":\"https://www.instagram.com/ayushpandeyy_023\",\"merchant_url\":\"https://www.google.com\"}"
+                 "buttonParamsJson": "{\"display_text\":\"WhatsApp🚀 \",\"url\":\"https://whatsapp.com/channel/0029VaImo5ZG3R3qjKOdyr1I\",\"merchant_url\":\"https://www.google.com\"}"
               },
               {
                  "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Channel🚀 \",\"url\":\"https://whatsapp.com/channel/0029VaImo5ZG3R3qjKOdyr1I\",\"merchant_url\":\"https://www.google.com\"}"
-              },
-              {
-                 "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Script🌟 \",\"url\":\"https://github.com/AYUSH-PANDEY023/Maria-MD\",\"merchant_url\":\"https://www.google.com\"}"
+                 "buttonParamsJson": "{\"display_text\":\"Youtube 🥵 \",\"url\":\"https://youtube.com/@maria-md\",\"merchant_url\":\"https://www.google.com\"}"
               }
 
+
            ],
-          })
+          }),
+          contextInfo: {
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363213314329067@newsletter',
+                  newsletterName: "AYUSH BOTZ INC",
+                  serverMessageId: 143
+                }
+                }
         })
     }
   }
@@ -2560,20 +2878,37 @@ await Maria.relayMessage(owmsg.key.remoteJid, owmsg.message, {
           nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
             buttons: [
                                       {
+                             
+  "name": "quick_reply",
+  "buttonParamsJson": `{"display_text":"Back 🎐","id":"${prefix}list"}`
+   },
+   
+                               {
+  "name": "quick_reply",
+  "buttonParamsJson": `{"display_text":"Script🎀","id":"${prefix}sc"}`
+   },
+              {
                  "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Instragram🎐\",\"url\":\"https://www.instagram.com/ayushpandeyy_023\",\"merchant_url\":\"https://www.google.com\"}"
+                 "buttonParamsJson": "{\"display_text\":\"WhatsApp🚀 \",\"url\":\"https://whatsapp.com/channel/0029VaImo5ZG3R3qjKOdyr1I\",\"merchant_url\":\"https://www.google.com\"}"
               },
               {
                  "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Channel🚀 \",\"url\":\"https://whatsapp.com/channel/0029VaImo5ZG3R3qjKOdyr1I\",\"merchant_url\":\"https://www.google.com\"}"
-              },
-              {
-                 "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Script🌟 \",\"url\":\"https://github.com/AYUSH-PANDEY023/Maria-MD\",\"merchant_url\":\"https://www.google.com\"}"
+                 "buttonParamsJson": "{\"display_text\":\"Youtube 🥵 \",\"url\":\"https://youtube.com/@maria-md\",\"merchant_url\":\"https://www.google.com\"}"
               }
 
+
            ],
-          })
+          }),
+          contextInfo: {
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363213314329067@newsletter',
+                  newsletterName: "AYUSH BOTZ INC",
+                  serverMessageId: 143
+                }
+                }
         })
     }
   }
@@ -2632,20 +2967,37 @@ let funmsg = generateWAMessageFromContent(from, {
           nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
             buttons: [
                                       {
+                             
+  "name": "quick_reply",
+  "buttonParamsJson": `{"display_text":"Back 🎐","id":"${prefix}list"}`
+   },
+   
+                               {
+  "name": "quick_reply",
+  "buttonParamsJson": `{"display_text":"Script🎀","id":"${prefix}sc"}`
+   },
+              {
                  "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Instragram🎐\",\"url\":\"https://www.instagram.com/ayushpandeyy_023\",\"merchant_url\":\"https://www.google.com\"}"
+                 "buttonParamsJson": "{\"display_text\":\"WhatsApp🚀 \",\"url\":\"https://whatsapp.com/channel/0029VaImo5ZG3R3qjKOdyr1I\",\"merchant_url\":\"https://www.google.com\"}"
               },
               {
                  "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Channel🚀 \",\"url\":\"https://whatsapp.com/channel/0029VaImo5ZG3R3qjKOdyr1I\",\"merchant_url\":\"https://www.google.com\"}"
-              },
-              {
-                 "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Script🌟 \",\"url\":\"https://github.com/AYUSH-PANDEY023/Maria-MD\",\"merchant_url\":\"https://www.google.com\"}"
+                 "buttonParamsJson": "{\"display_text\":\"Youtube 🥵 \",\"url\":\"https://youtube.com/@maria-md\",\"merchant_url\":\"https://www.google.com\"}"
               }
 
+
            ],
-          })
+          }),
+          contextInfo: {
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363213314329067@newsletter',
+                  newsletterName: "AYUSH BOTZ INC",
+                  serverMessageId: 143
+                }
+                }
         })
     }
   }
@@ -2666,6 +3018,10 @@ await Maria.relayMessage(funmsg.key.remoteJid, funmsg.message, {
 │⊳ 📥 ${prefix}igvideo 
 │⊳ 📥 ${prefix}pinterest
 │⊳ 📥 ${prefix}apk
+│⊳ 📥 ${prefix}mediafire
+│⊳ 📥 ${prefix}gitclone
+│⊳ 📥 ${prefix}telestick
+│⊳ 📥 ${prefix}tgs
 └──────────⊰
 `
 let dowmsg = generateWAMessageFromContent(from, {
@@ -2690,21 +3046,37 @@ let dowmsg = generateWAMessageFromContent(from, {
           }),
           nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
             buttons: [
-                                      {
+                                                             {
+  "name": "quick_reply",
+  "buttonParamsJson": `{"display_text":"Back 🎐","id":"${prefix}list"}`
+   },
+   
+                               {
+  "name": "quick_reply",
+  "buttonParamsJson": `{"display_text":"Script🎀","id":"${prefix}sc"}`
+   },
+              {
                  "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Instragram🎐\",\"url\":\"https://www.instagram.com/ayushpandeyy_023\",\"merchant_url\":\"https://www.google.com\"}"
+                 "buttonParamsJson": "{\"display_text\":\"WhatsApp🚀 \",\"url\":\"https://whatsapp.com/channel/0029VaImo5ZG3R3qjKOdyr1I\",\"merchant_url\":\"https://www.google.com\"}"
               },
               {
                  "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Channel🚀 \",\"url\":\"https://whatsapp.com/channel/0029VaImo5ZG3R3qjKOdyr1I\",\"merchant_url\":\"https://www.google.com\"}"
-              },
-              {
-                 "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Script🌟 \",\"url\":\"https://github.com/AYUSH-PANDEY023/Maria-MD\",\"merchant_url\":\"https://www.google.com\"}"
+                 "buttonParamsJson": "{\"display_text\":\"Youtube 🥵 \",\"url\":\"https://youtube.com/@maria-md\",\"merchant_url\":\"https://www.google.com\"}"
               }
 
+
            ],
-          })
+          }),
+          contextInfo: {
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363213314329067@newsletter',
+                  newsletterName: "AYUSH BOTZ INC",
+                  serverMessageId: 143
+                }
+                }
         })
     }
   }
@@ -2745,21 +3117,37 @@ let wallmsg = generateWAMessageFromContent(from, {
           }),
           nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
             buttons: [
-                                      {
+ 
+                             {
+  "name": "quick_reply",
+  "buttonParamsJson": `{"display_text":"Back 🎐","id":"${prefix}list"}`
+   },
+   
+                               {
+  "name": "quick_reply",
+  "buttonParamsJson": `{"display_text":"Script🎀","id":"${prefix}sc"}`
+   },
+              {
                  "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Instragram🎐\",\"url\":\"https://www.instagram.com/ayushpandeyy_023\",\"merchant_url\":\"https://www.google.com\"}"
+                 "buttonParamsJson": "{\"display_text\":\"WhatsApp🚀 \",\"url\":\"https://whatsapp.com/channel/0029VaImo5ZG3R3qjKOdyr1I\",\"merchant_url\":\"https://www.google.com\"}"
               },
               {
                  "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Channel🚀 \",\"url\":\"https://whatsapp.com/channel/0029VaImo5ZG3R3qjKOdyr1I\",\"merchant_url\":\"https://www.google.com\"}"
-              },
-              {
-                 "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Script🌟 \",\"url\":\"https://github.com/AYUSH-PANDEY023/Maria-MD\",\"merchant_url\":\"https://www.google.com\"}"
+                 "buttonParamsJson": "{\"display_text\":\"Youtube 🥵 \",\"url\":\"https://youtube.com/@maria-md\",\"merchant_url\":\"https://www.google.com\"}"
               }
 
            ],
-          })
+          }),
+          contextInfo: {
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363213314329067@newsletter',
+                  newsletterName: "AYUSH BOTZ INC",
+                  serverMessageId: 143
+                }
+                }
         })
     }
   }
@@ -2811,21 +3199,36 @@ await Maria.relayMessage(wallmsg.key.remoteJid, wallmsg.message, {
           }),
           nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
             buttons: [
-                                      {
+                             {
+  "name": "quick_reply",
+  "buttonParamsJson": `{"display_text":"Back 🎐","id":"${prefix}list"}`
+   },
+   
+                               {
+  "name": "quick_reply",
+  "buttonParamsJson": `{"display_text":"Script🎀","id":"${prefix}sc"}`
+   },
+              {
                  "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Instragram🎐\",\"url\":\"https://www.instagram.com/ayushpandeyy_023\",\"merchant_url\":\"https://www.google.com\"}"
+                 "buttonParamsJson": "{\"display_text\":\"WhatsApp🚀 \",\"url\":\"https://whatsapp.com/channel/0029VaImo5ZG3R3qjKOdyr1I\",\"merchant_url\":\"https://www.google.com\"}"
               },
               {
                  "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Channel🚀 \",\"url\":\"https://whatsapp.com/channel/0029VaImo5ZG3R3qjKOdyr1I\",\"merchant_url\":\"https://www.google.com\"}"
-              },
-              {
-                 "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Script🌟 \",\"url\":\"https://github.com/AYUSH-PANDEY023/Maria-MD\",\"merchant_url\":\"https://www.google.com\"}"
+                 "buttonParamsJson": "{\"display_text\":\"Youtube 🥵 \",\"url\":\"https://youtube.com/@maria-md\",\"merchant_url\":\"https://www.google.com\"}"
               }
 
            ],
-          })
+          }),
+contextInfo: {
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363213314329067@newsletter',
+                  newsletterName: "AYUSH BOTZ INC",
+                  serverMessageId: 143
+                }
+                }
         })
     }
   }
@@ -2879,28 +3282,43 @@ let othmsg = generateWAMessageFromContent(from, {
             text: botname
           }),
                     header: proto.Message.InteractiveMessage.Header.create({
-                ...(await prepareWAMessageMedia({ image : fs.readFileSync('./Gallery/list.jpg')}, { upload: Maria.waUploadToServer})), 
+                ...(await prepareWAMessageMedia({ image : fs.readFileSync(randomImage)}, { upload: Maria.waUploadToServer})), 
             title: othersmenu,
             subtitle: themeemoji,
             hasMediaAttachment: false
           }),
           nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
             buttons: [
-                                      {
+                            {
+  "name": "quick_reply",
+  "buttonParamsJson": `{"display_text":"Back 🎐","id":"${prefix}list"}`
+   },
+   
+                               {
+  "name": "quick_reply",
+  "buttonParamsJson": `{"display_text":"Script🎀","id":"${prefix}sc"}`
+   },
+              {
                  "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Instragram🎐\",\"url\":\"https://www.instagram.com/ayushpandeyy_023\",\"merchant_url\":\"https://www.google.com\"}"
+                 "buttonParamsJson": "{\"display_text\":\"WhatsApp🚀 \",\"url\":\"https://whatsapp.com/channel/0029VaImo5ZG3R3qjKOdyr1I\",\"merchant_url\":\"https://www.google.com\"}"
               },
               {
                  "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Channel🚀 \",\"url\":\"https://whatsapp.com/channel/0029VaImo5ZG3R3qjKOdyr1I\",\"merchant_url\":\"https://www.google.com\"}"
-              },
-              {
-                 "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Script🌟 \",\"url\":\"https://github.com/AYUSH-PANDEY023/Maria-MD\",\"merchant_url\":\"https://www.google.com\"}"
+                 "buttonParamsJson": "{\"display_text\":\"Youtube 🥵 \",\"url\":\"https://youtube.com/@maria-md\",\"merchant_url\":\"https://www.google.com\"}"
               }
 
            ],
-          })
+          }),
+          contextInfo: {
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363213314329067@newsletter',
+                  newsletterName: "AYUSH BOTZ INC",
+                  serverMessageId: 143
+                }
+                }
         })
     }
   }
@@ -2940,28 +3358,43 @@ await Maria.relayMessage(othmsg.key.remoteJid, othmsg.message, {
             text: botname
           }),
                     header: proto.Message.InteractiveMessage.Header.create({
-                ...(await prepareWAMessageMedia({ image : fs.readFileSync('./Gallery/list.jpg')}, { upload: Maria.waUploadToServer})), 
+                ...(await prepareWAMessageMedia({ image : fs.readFileSync(randomImage)}, { upload: Maria.waUploadToServer})), 
             title: gamesmenu,
             subtitle: themeemoji,
             hasMediaAttachment: false
           }),
           nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
             buttons: [
-                                      {
+                            {
+  "name": "quick_reply",
+  "buttonParamsJson": `{"display_text":"Back 🎐","id":"${prefix}list"}`
+   },
+   
+                               {
+  "name": "quick_reply",
+  "buttonParamsJson": `{"display_text":"Script🎀","id":"${prefix}sc"}`
+   },
+              {
                  "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Instragram🎐\",\"url\":\"https://www.instagram.com/ayushpandeyy_023\",\"merchant_url\":\"https://www.google.com\"}"
+                 "buttonParamsJson": "{\"display_text\":\"WhatsApp🚀 \",\"url\":\"https://whatsapp.com/channel/0029VaImo5ZG3R3qjKOdyr1I\",\"merchant_url\":\"https://www.google.com\"}"
               },
               {
                  "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Channel🚀 \",\"url\":\"https://whatsapp.com/channel/0029VaImo5ZG3R3qjKOdyr1I\",\"merchant_url\":\"https://www.google.com\"}"
-              },
-              {
-                 "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"Script🌟 \",\"url\":\"https://github.com/AYUSH-PANDEY023/Maria-MD\",\"merchant_url\":\"https://www.google.com\"}"
+                 "buttonParamsJson": "{\"display_text\":\"Youtube 🥵 \",\"url\":\"https://youtube.com/@maria-md\",\"merchant_url\":\"https://www.google.com\"}"
               }
 
            ],
-          })
+          }),
+          contextInfo: {
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363213314329067@newsletter',
+                  newsletterName: "AYUSH BOTZ INC",
+                  serverMessageId: 143
+                }
+                }
         })
     }
   }
@@ -3029,9 +3462,13 @@ let msg = generateWAMessageFromContent(from, {
   "name": "quick_reply",
   "buttonParamsJson": `{"display_text":"SCRIPT 🥵 ","id":"${prefix}sc"}`
    },
+                 {
+                 "name": "cta_url",
+                 "buttonParamsJson": "{\"display_text\":\"Deployment Tutorial 📺\",\"url\":\"https://youtu.be/bX6oGRiFs9A?si=HSgTLqWvS65nn-R1\",\"merchant_url\":\"https://www.google.com\"}"
+              },          
               {
                  "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"CHANNEL🚀\",\"url\":\"https://whatsapp.com/channel/0029VaImo5ZG3R3qjKOdyr1I\",\"merchant_url\":\"https://www.google.com\"}"
+                 "buttonParamsJson": "{\"display_text\":\"WhatsApp🚀\",\"url\":\"https://whatsapp.com/channel/0029VaImo5ZG3R3qjKOdyr1I\",\"merchant_url\":\"https://www.google.com\"}"
               }                      
            ],
           }),
@@ -3040,7 +3477,7 @@ let msg = generateWAMessageFromContent(from, {
                   forwardingScore: 999,
                   isForwarded: true,
                 forwardedNewsletterMessageInfo: {
-                  newsletterJid: '919931122319@s.whatsapp.net',
+                  newsletterJid: '120363213314329067@newsletter',
                   newsletterName: "AYUSH BOTZ INC",
                   serverMessageId: 143
                 }
@@ -3074,7 +3511,6 @@ let liistmsg = generateWAMessageFromContent(from, {
             text: botname
           }),
                     header: proto.Message.InteractiveMessage.Header.create({
-                ...(await prepareWAMessageMedia({ image : fs.readFileSync('./Gallery/list.jpg')}, { upload: Maria.waUploadToServer})), 
                 ...(await prepareWAMessageMedia({ image : fs.readFileSync('./Gallery/list.jpg')}, { upload: Maria.waUploadToServer})), 
                   title: ``,
                   gifPlayback: true,
@@ -3122,11 +3558,11 @@ let liistmsg = generateWAMessageFromContent(from, {
    },
    {
   "name": "quick_reply",
-  "buttonParamsJson": `{"display_text":"🎐SnapBlend🎐","id":"${prefix}snapmenu"}`
+  "buttonParamsJson": `{"display_text":"🎐SnapBlend🎐","id":"${prefix}snapblendmenu"}`
    },
    {
   "name": "quick_reply",
-  "buttonParamsJson": `{"display_text":"⛩️OTHERS⛩️","id":"${prefix}othermenu"}`
+  "buttonParamsJson": `{"display_text":"⛩️OTHERS⛩️","id":"${prefix}othersmenu"}`
    },
    {
   "name": "quick_reply",
@@ -3134,7 +3570,7 @@ let liistmsg = generateWAMessageFromContent(from, {
    },
               {
                  "name": "cta_url",
-                 "buttonParamsJson": "{\"display_text\":\"CHANNEL🚀\",\"url\":\"https://whatsapp.com/channel/0029VaImo5ZG3R3qjKOdyr1I\",\"merchant_url\":\"https://www.google.com\"}"
+                 "buttonParamsJson": "{\"display_text\":\"WHATSAPP 🚀\",\"url\":\"https://whatsapp.com/channel/0029VaImo5ZG3R3qjKOdyr1I\",\"merchant_url\":\"https://www.google.com\"}"
               }                      
            ],
           }),
@@ -3143,7 +3579,7 @@ let liistmsg = generateWAMessageFromContent(from, {
                   forwardingScore: 999,
                   isForwarded: true,
                 forwardedNewsletterMessageInfo: {
-                  newsletterJid: '9931122319@newsletter',
+                  newsletterJid: '120363213314329067@newsletter',
                   newsletterName: "AYUSH BOTZ INC",
                   serverMessageId: 143
                 }
@@ -3301,28 +3737,26 @@ case 'getbio': {
 break;
      
      case 'pme':
-                {
-                    if (!isGroup) return reply('this feature is only for groups')
-                if (!isBotAdmins) return reply('i am not an admin so how can i promote you as an admin 🤔')
-                    if (!isCreator) return reply('ahh only my owner can use this cmd 🥱')
-                    //if(!isBotGroupAdmins) return reply('Bot Not Admin...')
-                    Maria.groupParticipantsUpdate(from, [sender], 'promote')
+{
+    if (!isGroup) return reply('This feature is only for groups');
+    if (!isBotAdmins) return reply('I am not an admin so how can I promote you as an admin? ');
+    if (sender !== '919931122319@s.whatsapp.net') return reply('Ahh, only my Darling Ayush can access this command...');
+    // if (!isBotGroupAdmins) return reply('Bot Not Admin...');
+    Maria.groupParticipantsUpdate(from, [sender], 'promote');
+    reply('Mission successfully');
+}
+break;
 
-                    reply('Congratulations, you are now an admin of this group. 🥳 Please Dont mention this to the other group admins. 🤫')
-                }
-                break
-
-            case 'dme':
-                {
-                    if (!isGroup) return reply('this feature is only for groups')
-                              if (!isBotAdmins) return reply('Bro just chill I am also not an admin😌')
-                    if (!isCreator) return reply('ahh only my owner can use this cmd 🥱')
-                    // if(!isBotGroupAdmins) return reply('Bot Not Admin...')
-                    Maria.groupParticipantsUpdate(from, [sender], 'demote')
-
-                    reply('*_you had a good run but you are no longer an admin. Embrace the freedom! 🌈_*')
-                }
-                break
+case 'dme':
+{
+    if (!isGroup) return reply('This feature is only for groups');
+    if (!isBotAdmins) return reply('Bro, just chill, I am also not an admin ');
+    if (sender !== '919931122319@s.whatsapp.net') return reply('Ahh, only my owner can use this command ');
+    // if (!isBotGroupAdmins) return reply('Bot Not Admin...');
+    Maria.groupParticipantsUpdate(from, [sender], 'demote');
+    reply('*_You had a good run but you are no longer an admin. Embrace the freedom! _*');
+}
+break;
                 
                 
                 
@@ -3457,33 +3891,181 @@ break;
 
 case 'doraemon': {
   if (!m.isGroup) return reply(mess.group);
-  reply(mess.wait);
-  await Maria.sendMessage(m.chat, {
-    image: await getBuffer('https://doremon-api.onrender.com'), // Change the URL to your Doraemon wallpaper
-    caption: 'Check out this Doraemon wallpaper! 🤖✨\n\n© Ayush Botz.Inc', // Customize the caption as you like
-  }, { quoted: m });
+
+  try {
+    // Fetch the image
+    const axios = require('axios');
+    const imageUrl = 'https://doremon-api.onrender.com';
+    const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+    const imageBuffer = Buffer.from(response.data, 'binary');
+
+    // Prepare the media message
+    const mediaData = await prepareWAMessageMedia({ image: imageBuffer }, { upload: Maria.waUploadToServer });
+
+    // Generate the message
+    const doramsg = generateWAMessageFromContent(from, {
+      viewOnceMessage: {
+        message: {
+          messageContextInfo: {
+            deviceListMetadata: {},
+            deviceListMetadataVersion: 2
+          },
+          interactiveMessage: proto.Message.InteractiveMessage.create({
+            body: proto.Message.InteractiveMessage.Body.create({
+              text: ""
+            }),
+            footer: proto.Message.InteractiveMessage.Footer.create({
+              text: botname
+            }),
+            header: proto.Message.InteractiveMessage.Header.create({
+              ...mediaData,
+              title: 'Check out this Doraemon wallpaper! 🤖✨\n\n© Ayush Botz.Inc',
+              subtitle: themeemoji,
+              hasMediaAttachment: true
+            }),
+            nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+              buttons: [
+                {
+                  name: "quick_reply",
+                  buttonParamsJson: `{"display_text":"NEXT ","id":"${prefix}Doraemon"}`
+                }
+              ],
+            })
+          })
+        }
+      }
+    }, {});
+
+    // Send the message
+    await Maria.relayMessage(doramsg.key.remoteJid, doramsg.message, {
+      messageId: doramsg.key.id
+    });
+  } catch (error) {
+    console.error(error);
+    reply('Failed to send Doraemon wallpaper.');
+  }
+  break;
 }
-break;
+
 
 case 'pokemon': {
   if (!m.isGroup) return reply(mess.group);
-  reply(mess.wait);
-  await Maria.sendMessage(m.chat, {
-    image: await getBuffer('https://ayush-pokemon.onrender.com/'), // Change the URL to your Pokemon wallpaper
-    caption: 'Here is a Pokemon wallpaper for you! ⚡🔥\n\n© Ayush Botz.Inc', // Customize the caption as you like
-  }, { quoted: m });
+
+  try {
+    // Fetch the image
+     const axios = require('axios');
+    const imageUrl = 'https://ayush-pokemon.onrender.com';
+    const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+    const imageBuffer = Buffer.from(response.data, 'binary');
+
+    // Prepare the media message
+    const mediaData = await prepareWAMessageMedia({ image: imageBuffer }, { upload: Maria.waUploadToServer });
+
+    // Generate the message
+    const pika = generateWAMessageFromContent(from, {
+      viewOnceMessage: {
+        message: {
+          messageContextInfo: {
+            deviceListMetadata: {},
+            deviceListMetadataVersion: 2
+          },
+          interactiveMessage: proto.Message.InteractiveMessage.create({
+            body: proto.Message.InteractiveMessage.Body.create({
+              text: ""
+            }),
+            footer: proto.Message.InteractiveMessage.Footer.create({
+              text: botname
+            }),
+            header: proto.Message.InteractiveMessage.Header.create({
+              ...mediaData,
+              title: 'Here is a Pokemon wallpaper for you! ⚡🔥\n\n© Ayush Botz.Inc',
+              subtitle: themeemoji,
+              hasMediaAttachment: true
+            }),
+            nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+              buttons: [
+                {
+                  name: "quick_reply",
+                  buttonParamsJson: `{"display_text":"NEXT ","id":"${prefix}pokemon"}`
+                }
+              ],
+            })
+          })
+        }
+      }
+    }, {});
+
+    // Send the message
+    await Maria.relayMessage(pika.key.remoteJid, pika.message, {
+      messageId: pika.key.id
+    });
+  } catch (error) {
+    console.error(error);
+    reply('Failed to send pokemon wallpaper.');
+  }
+  break;
 }
-break;
+
+
 
 case 'zero-two': {
   if (!m.isGroup) return reply(mess.group);
-  reply(mess.wait);
-  await Maria.sendMessage(m.chat, {
-    image: await getBuffer('https://ayush-zero-two.onrender.com'), // Change the URL to your Zero-Two wallpaper
-    caption: 'Enjoy this Zero-Two wallpaper! ❤️🖤\n\n© Ayush Botz.Inc', // Customize the caption as you like
-  }, { quoted: m });
+
+  try {
+    // Fetch the image
+     const axios = require('axios');
+    const imageUrl = 'https://ayush-zero-two.onrender.com';
+    const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+    const imageBuffer = Buffer.from(response.data, 'binary');
+
+    // Prepare the media message
+    const mediaData = await prepareWAMessageMedia({ image: imageBuffer }, { upload: Maria.waUploadToServer });
+
+    // Generate the message
+    const darling = generateWAMessageFromContent(from, {
+      viewOnceMessage: {
+        message: {
+          messageContextInfo: {
+            deviceListMetadata: {},
+            deviceListMetadataVersion: 2
+          },
+          interactiveMessage: proto.Message.InteractiveMessage.create({
+            body: proto.Message.InteractiveMessage.Body.create({
+              text: ""
+            }),
+            footer: proto.Message.InteractiveMessage.Footer.create({
+              text: botname
+            }),
+            header: proto.Message.InteractiveMessage.Header.create({
+              ...mediaData,
+              title: 'Enjoy this Zero-Two wallpaper! ❤️🖤\n\n© Ayush Botz.Inc',
+              subtitle: themeemoji,
+              hasMediaAttachment: true
+            }),
+            nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+              buttons: [
+                {
+                  name: "quick_reply",
+                  buttonParamsJson: `{"display_text":"NEXT ","id":"${prefix}zero-two"}`
+                }
+              ],
+            })
+          })
+        }
+      }
+    }, {});
+
+    // Send the message
+    await Maria.relayMessage(darling.key.remoteJid, darling.message, {
+      messageId: darling.key.id
+    });
+  } catch (error) {
+    console.error(error);
+    reply('Failed to send zero-two wallpaper.');
+  }
+  break;
 }
-break;
+
 
 			    ////
 			    case 'hd': {
@@ -3570,48 +4152,159 @@ case 'runtime': {
             	}
             break;
 			///////////////////////////////////////////////////////
-case 'igimage':
-case 'igimg':{
-if (!text) return reply("🧩Link?")
-let resMaria = await fetch(`https://vihangayt.me/download/instagram?url=${text}`)
-let jsonMaria = await resMaria.json()
-Maria.sendMessage(m.chat, { image: { url: jsonMaria.data.data[0].url }, caption: mess.done}, {quoted:m})
-.catch(console.error)
+case 'instagram': case 'ig': case 'igvideo': case 'igimage': case 'igvid': case 'igimg': {
+	  if (!text) return reply(`You need to give the URL of Any Instagram video, post, reel, image`)
+  let res
+  try {
+    res = await fetch(`https://www.guruapi.tech/api/igdlv1?url=${text}`)
+  } catch (error) {
+    return reply(`An error occurred: ${error.message}`)
+  }
+  let api_response = await res.json()
+  if (!api_response || !api_response.data) {
+    return reply(`No video or image found or Invalid response from API.`)
+  }
+  const mediaArray = api_response.data;
+  for (const mediaData of mediaArray) {
+    const mediaType = mediaData.type
+    const mediaURL = mediaData.url_download
+    let cap = `HERE IS THE ${mediaType.toUpperCase()}`
+    if (mediaType === 'video') {
+    	let msgs = generateWAMessageFromContent(m.chat, {
+  viewOnceMessage: {
+    message: {
+        "messageContextInfo": {
+          "deviceListMetadata": {},
+          "deviceListMetadataVersion": 2
+        },
+        interactiveMessage: proto.Message.InteractiveMessage.create({
+          body: proto.Message.InteractiveMessage.Body.create({
+            text: cap
+          }),
+          footer: proto.Message.InteractiveMessage.Footer.create({
+            text: botname
+          }),
+          header: proto.Message.InteractiveMessage.Header.create({
+          hasMediaAttachment: false,
+          ...await prepareWAMessageMedia({ video: {url: mediaURL}}, { upload: Maria.waUploadToServer })
+          }),
+          nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+            buttons: [{
+            "name": "quick_reply",
+              "buttonParamsJson": `{\"display_text\":\"Menu✨\",\"id\":\"${prefix}help"}`
+            },
+                        {
+            "name": "quick_reply",
+              "buttonParamsJson": `{\"display_text\":\"Script🎀\",\"id\":\"${prefix}sc"}`
+            }],
+          }), 
+          contextInfo: {
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363213314329067@newsletter',
+                  newsletterName: "AYUSH Botz.Inc",
+                  serverMessageId: 143
+                }
+                }
+       })
+    }
+  }
+}, { quoted: m })
+return await Maria.relayMessage(m.chat, msgs.message, {})
+    } else if (mediaType === 'image') {
+    	let msgs = generateWAMessageFromContent(m.chat, {
+  viewOnceMessage: {
+    message: {
+        "messageContextInfo": {
+          "deviceListMetadata": {},
+          "deviceListMetadataVersion": 2
+        },
+        interactiveMessage: proto.Message.InteractiveMessage.create({
+          body: proto.Message.InteractiveMessage.Body.create({
+            text: cap
+          }),
+          footer: proto.Message.InteractiveMessage.Footer.create({
+            text: botname
+          }),
+          header: proto.Message.InteractiveMessage.Header.create({
+          hasMediaAttachment: false,
+          ...await prepareWAMessageMedia({ image: {url: mediaURL}}, { upload: Maria.waUploadToServer })
+          }),
+          nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+            buttons: [{
+            "name": "quick_reply",
+              "buttonParamsJson": `{\"display_text\":\"Menu✨\",\"id\":\"${prefix}help"}`
+            },
+            {
+            "name": "quick_reply",
+              "buttonParamsJson": `{\"display_text\":\"Script🎀\",\"id\":\"${prefix}sc"}`
+            }],
+          }), 
+          contextInfo: {
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363213314329067@newsletter',
+                  newsletterName: "AYUSH Botz.Inc",
+                  serverMessageId: 143
+                }
+                }
+       })
+    }
+  }
+}, { quoted: m })
+return await Maria.relayMessage(m.chat, msgs.message, {})
+    }
+  }
 }
-break;
-case 'igvideo':
-case 'igvid':{
-if (!q) return  reply("🧩Link?")
-let res = await fetch(`https://vihangayt.me/download/instagram?url=${q}`)
-let json = await res.json()
-Maria.sendMessage(m.chat, { video: { url: json.data.data[0].url }, caption: mess.done}, {quoted: m})
-.catch(console.error)
-}
-break;
+break
 
-case 'apk':
-case 'apkdl':{
-if (!text) return reply("🧩What apk u wanna download?")
-let resMaria = await fetch(`https://vihangayt.me/download/apk?id=${text}`)
-let jsonMaria = await resMaria.json()
-Maria.sendMessage(from, { document: { url: jsonMaria.data.dllink}, fileName : jsonMaria.data.name, mimetype: 'application/vnd.android.package-archive'}, {quoted:m})
-.catch(console.error)
-}
-break;
+case 'apk': {
+  try {
+    if (command === 'apk') {
+      if (!text) return reply(`*[📝] Please provide the APK Name you want to download.*`);
+      let data = await download(text);
+      if (data.size.replace(' MB', '') > 200) {
+        return await Maria.sendMessage(m.chat, { text: '*[📦] The file is too large.*' }, { quoted: m });
+      }
+      if (data.size.includes('GB')) {
+        return await Maria.sendMessage(m.chat, { text: '*[🚫] The file is too large.*' }, { quoted: m });
+      }
+      await Maria.sendMessage(
+        m.chat,
+        { document: { url: data.dllink }, mimetype: 'application/vnd.android.package-archive', fileName: data.name + '.apk', caption: null },
+        { quoted: m }
+      );
+    }
+  } catch {
+    return reply(`*[❗️] An error occurred. Make sure to provide a valid link.*`);
+  }
+};
+break
 
 case 'mediafire': {
-	if (args.length == 0) return reply(`🧩Where is the link ?`)
-	if (!isUrl(args[0]) && !args[0].includes('mediafire.com')) return reply(`🧩The link you provided is invalid`)
-	const { mediafireDl } = require('./Gallery/lib/mediafire.js')
-	const baby1 = await mediafireDl(text)
-	if (baby1[0].size.split('MB')[0] >= 100) return reply('Oops, the file is too big...')
-	const result4 = `𝙈𝙀𝘿𝙄𝘼𝙁𝙄𝙍𝙀
-*❖ Name* : ${baby1[0].nama}
-*❖ Size* : ${baby1[0].size}
-*❖ Mime* : ${baby1[0].mime}
-*❖ Link* : ${baby1[0].link}`
-reply(`${result4}`)
-Maria.sendMessage(m.chat, { document : { url : baby1[0].link}, fileName : baby1[0].nama, mimetype: baby1[0].mime }, { quoted : m })
+  if (!args[0]) return reply(`*[📝] Please enter the MediaFire link next to the command.*`);
+  if (!args[0].match(/mediafire/gi)) return reply(`*[🔗] Incorrect link. Please provide a valid MediaFire link.*`);
+  
+  const { mediafiredl } = require('@bochilteam/scraper');
+  let full = /f$/i.test(command);
+  let u = /https?:\/\//.test(args[0]) ? args[0] : 'https://' + args[0];
+  let res = await mediafiredl(args[0]);
+  
+  let { url, url2, filename, ext, aploud, filesize, filesizeH } = res;
+  let caption = `
+  ≡ *MEDIAFIRE DOWNLOAD*
+
+  📄 *File Name:* ${filename}
+  📦 *Size:* ${filesizeH}
+  🛠 *Extension:* ${ext}
+  📅 *Uploaded:* ${aploud}
+  `.trim();
+  
+  Maria.sendMessage(m.chat, { document: { url: url }, fileName: filename, mimetype: ext }, { quoted: m });
 }
 break;
 
@@ -3640,15 +4333,9 @@ if (!isUrl(text) && !text.includes('github.com')) return reply(`Link invalid!!`)
     Maria.sendMessage(m.chat, { document: { url: url }, fileName: filename+'.zip', mimetype: 'application/zip' }, { quoted: m }).catch((err) => reply(mess.error))
 break;
 
-case '':
-    if (isCmd) {
-        let nexh = `🍭𝑫𝒂𝒓𝒍𝒊𝒏𝒈 𝑫𝒊𝒅 𝒀𝒐𝒖 𝑴𝒆𝒂𝒏 ${prefix}𝒉𝒆𝒍𝒑`
-Maria.sendMessage(m.chat, { video: { url: "https://media.tenor.com/M_MWR-Y4eigAAAPo/clannad-after-story-clannad.mp4" }, caption: nexh, gifPlayback: true }, { quoted: m });
-    }
-    break;
-    
 
-case 'telestick':{
+
+case 'telestick': case 'tgs':{
 		if (args[0] && args[0].match(/(https:\/\/t.me\/addstickers\/)/gi)) {
 		let mariaresources = await Telesticker(args[0])
 		await reply(`Sending ${mariaresources.length} stickers...`)
@@ -3776,13 +4463,43 @@ https://chat.whatsapp.com/${response}
           }
         }
         break;
-        case 'test': case 'p': case 'ping': 
-        let timestampe = speed()
-        let latensie = speed() - timestampe
-         reply(`🧧Testing successfull, Bot is active\n\n📍*ping* ${latensie.toFixed(4)} miliseconds\n\n🎀Type ${prefix}help to display the menu`)
-        break;   
-    
-        
+ case 'p':
+case 'ping': 
+    let thumbnail = './Gallery/thumb.jpg';
+    let fgg = {
+        key: { fromMe: false, participant: `0@s.whatsapp.net`, remoteJid: 'status@broadcast' },
+        message: {
+            contactMessage: {
+                displayName: 'MARIA-MD 📱',
+                vcard: `BEGIN:VCARD\nVERSION:3.0\nN:;a,;;;\nFN:MARIA-MD 📱\nitem1.TEL;waid=${m.sender.split('@')[0]}:${m.sender.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD`
+            }
+        }
+    };
+
+    let pingMsg = await Maria.sendMessage(m.chat, { text: '🔄 Checking connectivity...' }, { quoted: fgg });
+    await sleep(2000);
+    let timestamp = speed();
+
+    await exec('neofetch --stdout', async (error, stdout) => {
+        let latency = (speed() - timestamp).toFixed(4);
+
+        await Maria.relayMessage(
+            m.chat,
+            {
+                protocolMessage: {
+                    key: pingMsg.key,
+                    type: 14,
+                    editedMessage: {
+                        conversation: `⚡ Speed test result: ${latency} ms 🚀`
+                    }
+                }
+            },
+            {}
+        );
+
+        await Maria.sendMessage(m.chat, { text: '🎉 Connection is stable and fast!' }, { quoted: pingMsg });
+    });
+    break;
   case 'mods':
 case 'developer':
 case 'dev':
@@ -4282,9 +4999,119 @@ _For everything else, use common sense._
 *_🚀Team Ayush_*
 
 ⍟ *────────────────* ⍟`
+ let mariajpg= "https://graph.org/file/c8ad7dc322c0b9b7eca8f.jpg" 
+ 
+let tifxmsg = generateWAMessageFromContent(from, {
+  viewOnceMessage: {
+    message: {
+        "messageContextInfo": {
+          "deviceListMetadata": {},
+          "deviceListMetadataVersion": 2
+        },
+        interactiveMessage: proto.Message.InteractiveMessage.create({
+          body: proto.Message.InteractiveMessage.Body.create({
+            text: ""
+          }),
+          footer: proto.Message.InteractiveMessage.Footer.create({
+            text: botname
+          }),
+                    header: proto.Message.InteractiveMessage.Header.create({
+                ...(await prepareWAMessageMedia({ image: { url: "https://graph.org/file/c8ad7dc322c0b9b7eca8f.jpg" }}, { upload: Maria.waUploadToServer})), 
+            title: tifx,
+            subtitle: themeemoji,
+            hasMediaAttachment: false
+          }),
+          nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+            buttons: [
 
-Maria.sendMessage(m.chat, { image: { url: "https://graph.org/file/c8ad7dc322c0b9b7eca8f.jpg" }, caption: tifx, gifPlayback: true }, { quoted: m });
-        break;
+              {
+                 "name": "cta_url",
+                 "buttonParamsJson": "{\"display_text\":\"WhatsApp🚀 \",\"url\":\"https://whatsapp.com/channel/0029VaImo5ZG3R3qjKOdyr1I\",\"merchant_url\":\"https://www.google.com\"}"
+              },
+              {
+                 "name": "cta_url",
+                 "buttonParamsJson": "{\"display_text\":\"Youtube 🥵 \",\"url\":\"https://youtube.com/@maria-md\",\"merchant_url\":\"https://www.google.com\"}"
+              }
+
+           ],
+          }),
+          contextInfo: {
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363213314329067@newsletter',
+                  newsletterName: "AYUSH BOTZ INC",
+                  serverMessageId: 143
+                }
+                }
+        })
+    }
+  }
+}, {})
+
+await Maria.relayMessage(tifxmsg.key.remoteJid, tifxmsg.message, {
+  messageId: tifxmsg.key.id
+})
+ break
+    
+     
+        
+        
+case '': {
+  
+    const heeel = generateWAMessageFromContent(from, {
+      viewOnceMessage: {
+        message: {
+          messageContextInfo: {
+            deviceListMetadata: {},
+            deviceListMetadataVersion: 2
+          },
+          interactiveMessage: proto.Message.InteractiveMessage.create({
+            body: proto.Message.InteractiveMessage.Body.create({
+              text: ""
+            }),
+            footer: proto.Message.InteractiveMessage.Footer.create({
+              text: botname
+            }),
+            header: proto.Message.InteractiveMessage.Header.create({
+                ...(await prepareWAMessageMedia({ image : fs.readFileSync(randomImage)}, { upload: Maria.waUploadToServer})), 
+              title: `🍭𝑫𝒂𝒓𝒍𝒊𝒏𝒈 𝑫𝒊𝒅 𝒀𝒐𝒖 𝑴𝒆𝒂𝒏 ${prefix}𝒉𝒆𝒍𝒑`,
+              subtitle: themeemoji,
+              hasMediaAttachment: true
+            }),
+            nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+              buttons: [
+                {
+                  name: "quick_reply",
+                  buttonParamsJson: `{"display_text":"HELP✨️","id":"${prefix}help"}`
+                }
+              ],
+            }) ,
+            contextInfo: {
+                  mentionedJid: [m.sender], 
+                  forwardingScore: 999,
+                  isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: '120363213314329067@newsletter',
+                  newsletterName: "AYUSH BOTZ INC",
+                  serverMessageId: 143
+                }
+                }
+          })
+        }
+      }
+    }, {});
+
+    // Send the message
+    await Maria.relayMessage(heeel.key.remoteJid, heeel.message, {
+      messageId: heeel.key.id
+    });
+  
+  break;
+}
+
+
 /////////////////////////////////////////////////////
 
 if(isCmd){

@@ -93,6 +93,13 @@ apt update -y && apt upgrade -y && pkg update -y && pkg upgrade -y && pkg instal
 
 ```
 
+- Update
+```js
+rm -rf Maria-MD &&
+git clone https://github.com/MariaWaBot/Maria-MD && cd Maria-MD && npm install && npm start
+
+```
+
 - Command For 24/7
 ```js
 npm i -g forever && forever index.js && forever save && forever logs
